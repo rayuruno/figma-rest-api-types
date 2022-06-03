@@ -83,10 +83,25 @@ function renderInterface(node) {
 }
 
 function renderType(node) {
-  // TRANSFORM edge case
-  if (node.name === "Transform") {
-    return `type Transform = [[number, number, number], [number, number, number]];\n`;
+  // edge cases
+  switch (node.name) {
+    case "Transform":
+      return `type Transform = [[number, number, number], [number, number, number]];\n`;
+    case "Path":
+      return [
+        "type Path = {",
+        `\twindingRule: "NONZERO" | "EVENODD";`,
+        "\tpath: string;",
+        "}\n",
+      ].join("\n");
+    case "CornerRadius":
+      return "type CornerRadius = number[];\n";
+    case "ConnectorMagnet":
+      return `type ConnectorMagnet = "AUTO" | "TOP" | "BOTTOM" | "LEFT" | "RIGHT";\n`;
+    case "StyleType":
+      return `type StyleType = "FILL" | "TEXT" | "EFFECT" | "GRID";\n`;
   }
+
   let str = `type ${node.name} = `;
 
   if (node.fields?.length === 1 && node.fields[0].enums?.length) {
