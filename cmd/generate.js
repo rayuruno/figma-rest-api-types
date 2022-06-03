@@ -1,46 +1,48 @@
-import os from "os";
-import { join } from "path";
 import { parse } from "parse5";
 import { createWriteStream } from "fs";
 import { readFile } from "fs/promises";
 
-const htmlPath = join(os.tmpdir(), "api.html");
-const writer = createWriteStream("./figma.d.ts"); //process.stdout;
-const doc = parse(await readFile(htmlPath, "utf8"));
+export default async (src, dst) => {
+  if (!src) {
+    throw new Error("input file missing");
+  }
+  const writer = dst ? createWriteStream(dst) : process.stdout;
+  const doc = parse(await readFile(src, "utf8"));
 
-const globalProperties = find(doc, (n) =>
-  hasAttr(n, "id", "global-properties")
-);
-const globalPropertiesTable = find(globalProperties, (n) =>
-  hasAttr(n, "class", "developer_docs--propTable--1J4hJ")
-);
-
-writer.write(renderInterface(parsePropTable(globalPropertiesTable)));
-
-const nodeTypes = where(
-  find(doc, (n) => hasAttr(n, "id", "node-types")),
-  (n) => hasAttr(n, "id", /-props$/)
-);
-
-for (const nodeTypeTable of nodeTypes) {
-  writer.write(
-    renderInterface(
-      parsePropTable(nodeTypeTable, {
-        transformName: (name) => pascalCase(name) + "Node",
-        inheritence: "Node",
-      })
-    )
+  const globalProperties = find(doc, (n) =>
+    hasAttr(n, "id", "global-properties")
   );
-}
+  const globalPropertiesTable = find(globalProperties, (n) =>
+    hasAttr(n, "class", "developer_docs--propTable--1J4hJ")
+  );
 
-const propertyTypesTable = find(doc, (n) => hasAttr(n, "id", "files-types"));
-const propertyTypes = where(propertyTypesTable, (n) =>
-  hasAttr(n, "id", /-type$/)
-);
+  writer.write(renderInterface(parsePropTable(globalPropertiesTable)));
 
-for (const propertyType of propertyTypes) {
-  writer.write(renderType(parsePropTable(propertyType)));
-}
+  const nodeTypes = where(
+    find(doc, (n) => hasAttr(n, "id", "node-types")),
+    (n) => hasAttr(n, "id", /-props$/)
+  );
+
+  for (const nodeTypeTable of nodeTypes) {
+    writer.write(
+      renderInterface(
+        parsePropTable(nodeTypeTable, {
+          transformName: (name) => pascalCase(name) + "Node",
+          inheritence: "Node",
+        })
+      )
+    );
+  }
+
+  const propertyTypesTable = find(doc, (n) => hasAttr(n, "id", "files-types"));
+  const propertyTypes = where(propertyTypesTable, (n) =>
+    hasAttr(n, "id", /-type$/)
+  );
+
+  for (const propertyType of propertyTypes) {
+    writer.write(renderType(parsePropTable(propertyType)));
+  }
+};
 
 //
 
@@ -178,7 +180,9 @@ function parseField(f) {
       find(docs, (n) => hasAttr(n, "class", "format--literal--1UoNf"))
     );
     if (!exts) {
-      console.warn("cannot parse field of :" + getText(f));
+      if (process.env.DEBUG) {
+        console.warn("cannot parse field of :" + getText(f));
+      }
       return enums.length ? { enums } : null;
     }
     return { name: exts, type: "inheritence" };
