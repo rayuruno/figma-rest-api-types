@@ -12,7 +12,6 @@
   ],
   "scripts": {
     "fetch": "node cmd/fetch.js",
-    "parse": "node cmd/parse.js",
     "generate": "node cmd/generate.js"
   },
   "author": "me@onuruyar.com",
