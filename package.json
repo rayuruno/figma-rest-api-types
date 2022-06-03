@@ -1,6 +1,6 @@
 {
   "name": "figma-rest-api-types",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "figma rest api typescript definition generator",
   "type": "module",
   "keywords": [
@@ -10,7 +10,9 @@
     "types",
     "parser"
   ],
-  "bin": "bin/generate.js",
+  "bin": {
+    "figma-rest-api-types": "bin/generate.js"
+  },
   "author": "me@onuruyar.com",
   "license": "MIT",
   "dependencies": {

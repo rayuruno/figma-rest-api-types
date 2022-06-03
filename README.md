@@ -2,6 +2,12 @@
 
 parses https://www.figma.com/developers/api into typescript definitions
 
+## install
+
+`npm i figma-rest-api-types`
+
+_NOTE: this will install puppeteer with chromium_
+
 ## usage
 
-clone the repo and run `npm i` then execute `bin/generate.js [optional filename.d.ts]`
+`figma-rest-api-types [filename.d.ts]`
