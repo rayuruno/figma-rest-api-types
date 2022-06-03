@@ -197,7 +197,7 @@ function parseField(f) {
   };
 }
 function normalizeType(t) {
-  return t.replace(/String|Number|Boolean/, (s) => s.toLowerCase());
+  return t.replace(/String|Number|Boolean|Any/, (s) => s.toLowerCase());
 }
 
 function find(node, cb) {
@@ -230,15 +230,6 @@ function where(node, cb) {
   return Array.from(findAll(node, cb));
 }
 
-function* walk(node) {
-  yield node;
-  if (node?.childNodes) {
-    for (const child of node.childNodes) {
-      yield* walk(child);
-    }
-  }
-}
-
 function hasAttr(node, name, value) {
   if (!node) return;
   return !!node.attrs?.find((a) => a.name === name && a.value.match(value));
@@ -247,11 +238,6 @@ function hasAttr(node, name, value) {
 function getText(node) {
   if (!node) return;
   return find(node, (n) => n.nodeName === "#text")?.value;
-  // for (const child of walk(node)) {
-  //   if (child?.nodeName === "#text") {
-  //     return child.value;
-  //   }
-  // }
 }
 
 function pascalCase(str) {
