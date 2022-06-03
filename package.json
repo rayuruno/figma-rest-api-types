@@ -1,0 +1,24 @@
+{
+  "name": "figma-rest-api-types",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "keywords": [
+    "figma",
+    "rest",
+    "api",
+    "types",
+    "parser"
+  ],
+  "scripts": {
+    "fetch": "node cmd/fetch.js",
+    "parse": "node cmd/parse.js",
+    "generate": "node cmd/generate.js"
+  },
+  "author": "me@onuruyar.com",
+  "license": "MIT",
+  "dependencies": {
+    "parse5": "^7.0.0",
+    "puppeteer": "^14.2.1"
+  }
+}
