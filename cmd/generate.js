@@ -1,9 +1,12 @@
+import os from "os";
+import { join } from "path";
 import { parse } from "parse5";
 import { createWriteStream } from "fs";
 import { readFile } from "fs/promises";
 
-const writer = createWriteStream("./tmp/figma.d.ts"); //process.stdout;
-const doc = parse(await readFile("./tmp/api.html", "utf8"));
+const htmlPath = join(os.tmpdir(), "api.html");
+const writer = createWriteStream("./figma.d.ts"); //process.stdout;
+const doc = parse(await readFile(htmlPath, "utf8"));
 
 const globalProperties = find(doc, (n) =>
   hasAttr(n, "id", "global-properties")
