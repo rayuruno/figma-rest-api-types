@@ -212,7 +212,9 @@ function parseField(f) {
   };
 }
 function normalizeType(t) {
-  return t.replace(/String|Number|Boolean|Any/, (s) => s.toLowerCase());
+  return t
+    .replace(/String|Number|Boolean|Any/g, (s) => s.toLowerCase())
+    .replace("Map<", "Record<");
 }
 
 function find(node, cb) {
