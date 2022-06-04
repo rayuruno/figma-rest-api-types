@@ -7,7 +7,7 @@ import { writeFile } from "fs/promises";
 const cnt = await generate(await fetch());
 const dst = process.argv[2];
 if (dst) {
-  await writeFile(fst, cnt, "utf8");
+  await writeFile(dst, cnt, "utf8");
 } else {
   process.stdout.write(cnt);
 }

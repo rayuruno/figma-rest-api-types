@@ -1,6 +1,6 @@
 {
   "name": "figma-rest-api-types",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "figma rest api typescript definition generator",
   "type": "module",
   "scripts": {

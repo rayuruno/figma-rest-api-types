@@ -34,14 +34,17 @@ export default async (input) => {
   const propertyTypesTable = find(doc, (n) => hasAttr(n, "id", "files-types"));
   const propertyTypes = where(propertyTypesTable, (n) =>
     hasAttr(n, "id", /-type$/)
-  );
-
+  ).map((t) => parsePropTable(t));
   const extraTypes = [];
+
   for (const propertyType of propertyTypes) {
-    output.push(renderType(parsePropTable(propertyType), extraTypes));
+    output.push(renderType(propertyType, extraTypes));
   }
+
   for (const propertyType of extraTypes) {
-    output.push(renderType(propertyType));
+    if (!propertyTypes.find((t) => t.name === propertyType.name)) {
+      output.push(renderType(propertyType));
+    }
   }
 
   // missing types
@@ -139,7 +142,6 @@ function renderType(node, extraTypes) {
       if (field.type.match(/string|number|boolean|any/i)) {
         typ = field.enums.map((e) => `"${e}"`).join(" | ");
       } else {
-        console.log(field.enums);
         extraTypes.push({
           name: typ,
           fields: [{ enums: field.enums }],
