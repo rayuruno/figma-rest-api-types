@@ -23,6 +23,7 @@
   "devDependencies": {
     "uvu": "^0.5.3"
   },
+  "types": "./types/figma.d.ts",
   "files": [
     "bin/*",
     "cmd/*",
