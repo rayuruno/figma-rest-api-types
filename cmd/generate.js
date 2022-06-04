@@ -1,22 +1,19 @@
 import { parse } from "parse5";
-import { createWriteStream } from "fs";
-import { readFile } from "fs/promises";
 
-export default async (src, dst) => {
-  if (!src) {
-    throw new Error("input file missing");
-  }
-  const writer = dst ? createWriteStream(dst) : process.stdout;
-  const doc = parse(await readFile(src, "utf8"));
+export default async (input) => {
+  const doc = parse(input);
+
+  const output = [];
 
   const globalProperties = find(doc, (n) =>
     hasAttr(n, "id", "global-properties")
   );
+
   const globalPropertiesTable = find(globalProperties, (n) =>
     hasAttr(n, "class", "developer_docs--propTable--1J4hJ")
   );
 
-  writer.write(renderInterface(parsePropTable(globalPropertiesTable)));
+  output.push(renderInterface(parsePropTable(globalPropertiesTable)));
 
   const nodeTypes = where(
     find(doc, (n) => hasAttr(n, "id", "node-types")),
@@ -24,7 +21,7 @@ export default async (src, dst) => {
   );
 
   for (const nodeTypeTable of nodeTypes) {
-    writer.write(
+    output.push(
       renderInterface(
         parsePropTable(nodeTypeTable, {
           transformName: (name) => pascalCase(name) + "Node",
@@ -39,9 +36,21 @@ export default async (src, dst) => {
     hasAttr(n, "id", /-type$/)
   );
 
+  const extraTypes = [];
   for (const propertyType of propertyTypes) {
-    writer.write(renderType(parsePropTable(propertyType)));
+    output.push(renderType(parsePropTable(propertyType), extraTypes));
   }
+  for (const propertyType of extraTypes) {
+    output.push(renderType(propertyType));
+  }
+
+  // missing types
+  output.push(
+    `type Path = {\n\twindingRule: "NONZERO" | "EVENODD";\n\tpath: string;\n};`,
+    "type CornerRadius = number[];"
+  );
+
+  return output.join("\n") + "\n";
 };
 
 //
@@ -82,30 +91,18 @@ function renderInterface(node) {
   return str;
 }
 
-function renderType(node) {
+function renderType(node, extraTypes) {
   // edge cases
   switch (node.name) {
     case "Transform":
       return `type Transform = [[number, number, number], [number, number, number]];\n`;
-    case "Path":
-      return [
-        "type Path = {",
-        `\twindingRule: "NONZERO" | "EVENODD";`,
-        "\tpath: string;",
-        "}\n",
-      ].join("\n");
-    case "CornerRadius":
-      return "type CornerRadius = number[];\n";
-    case "ConnectorMagnet":
-      return `type ConnectorMagnet = "AUTO" | "TOP" | "BOTTOM" | "LEFT" | "RIGHT";\n`;
-    case "StyleType":
-      return `type StyleType = "FILL" | "TEXT" | "EFFECT" | "GRID";\n`;
   }
 
   let str = `type ${node.name} = `;
 
   if (node.fields?.length === 1 && node.fields[0].enums?.length) {
-    str += node.fields[0].enums.map((e) => `"${getText(e)}"`).join(" | ") + ";";
+    str +=
+      node.fields[0].enums.map((e) => `"${getText(e) || e}"`).join(" | ") + ";";
     str += "\n";
     return str;
   }
@@ -135,7 +132,22 @@ function renderType(node) {
     if (field.optional) {
       str += "?";
     }
-    str += `: ${field.type};`;
+
+    let typ = field.type;
+
+    if (field.enums?.length) {
+      if (field.type.match(/string|number|boolean|any/i)) {
+        typ = field.enums.map((e) => `"${e}"`).join(" | ");
+      } else {
+        console.log(field.enums);
+        extraTypes.push({
+          name: typ,
+          fields: [{ enums: field.enums }],
+        });
+      }
+    }
+
+    str += `: ${typ};`;
     str += "\n";
   }
 
@@ -165,6 +177,10 @@ function parsePropTable(t, opts) {
   if (opts?.inheritence && fields?.[0].type !== "inheritence") {
     fields.unshift({ name: opts?.inheritence, type: "inheritence" });
   }
+
+  fields = fields.filter(
+    (f, i, a) => !a.slice(i + 1).find((o) => f.name === o.name)
+  );
 
   return { name, fields };
 }

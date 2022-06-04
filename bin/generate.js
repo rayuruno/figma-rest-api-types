@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 
-import os from "os";
-import { join } from "path";
 import fetch from "../cmd/fetch.js";
 import generate from "../cmd/generate.js";
+import { writeFile } from "fs/promises";
 
-const src = join(os.tmpdir(), "api.html");
+const cnt = await generate(await fetch());
 const dst = process.argv[2];
-await fetch(src);
-await generate(src, dst);
+if (dst) {
+  await writeFile(fst, cnt, "utf8");
+} else {
+  process.stdout.write(cnt);
+}
