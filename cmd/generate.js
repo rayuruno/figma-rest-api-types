@@ -10,7 +10,7 @@ export default async (input) => {
   );
 
   const globalPropertiesTable = find(globalProperties, (n) =>
-    hasAttr(n, "class", "developer_docs--propTable--1J4hJ")
+    hasAttr(n, "class", /^developer_docs--propTable--/)
   );
 
   output.push(renderInterface(parsePropTable(globalPropertiesTable)));
@@ -162,17 +162,17 @@ function renderType(node, extraTypes) {
 
 function parsePropTable(t, opts) {
   let name = getText(
-    find(t, (n) => hasAttr(n, "class", "format--mono--3pkKT"))
+    find(t, (n) => hasAttr(n, "class", /^format--mono--/))
   );
   name = opts?.transformName ? opts?.transformName(name) : name;
 
-  let fields = where(t, (n) =>
-    hasAttr(n, "class", "developer_docs--propField--1r9AO")
-  )
+  let fields = (where(t, (n) =>
+    hasAttr(n, "class", /^developer_docs--propField--/)
+  ) || [])
     .map((f) => parseField(f))
     .filter((f) => !!f);
 
-  if (fields?.[0].type === "inheritence" && opts?.transformName) {
+  if (fields?.[0]?.type === "inheritence" && opts?.transformName) {
     fields[0].name = opts.transformName(fields?.[0].name);
   }
 
@@ -190,27 +190,27 @@ function parsePropTable(t, opts) {
 function parseField(f) {
   let name = getText(
     find(
-      find(f, (n) => hasAttr(n, "class", "developer_docs--monoDisplay--3W4Zj")),
-      (n) => hasAttr(n, "class", "format--mono--3pkKT")
+      find(f, (n) => hasAttr(n, "class", /^developer_docs--monoDisplay--/)),
+      (n) => hasAttr(n, "class", /^format--mono--/)
     )
   );
   let type = getText(
-    find(f, (n) => hasAttr(n, "class", "format--type--VIwo1"))
+    find(f, (n) => hasAttr(n, "class", /^format--type--/))
   );
   let defaults = getText(
     find(f, (n) =>
-      hasAttr(n, "class", "developer_docs--defaultsDisplay--3Zy6K")
+      hasAttr(n, "class", /^developer_docs--defaultsDisplay/)
     )
   );
   let docs = find(f, (n) =>
-    hasAttr(n, "class", "developer_docs--propDesc--16eOE")
+    hasAttr(n, "class", /^developer_docs--propDesc--/)
   );
   // let constraints = find(f, n => hasAttr(n, "class", "developer_docs--constraints--3V_MG"))
-  let enums = where(f, (n) => hasAttr(n, "class", "format--string--mGamT"));
+  let enums = where(f, (n) => hasAttr(n, "class", /^format--string--/));
 
   if (!name) {
     let exts = getText(
-      find(docs, (n) => hasAttr(n, "class", "format--literal--1UoNf"))
+      find(docs, (n) => hasAttr(n, "class", /^format--literal--/))
     );
     if (!exts) {
       if (process.env.DEBUG) {
